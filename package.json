@@ -1,7 +1,8 @@
 {
   "name": "counter-mcp",
-  "version": "1.0.0",
+  "version": "1.0.3",
   "description": "counter-mcp",
+  "type": "module",
   "main": "dist/server.js",
   "scripts": {
     "build": "tsc",
@@ -14,6 +15,7 @@
   "author": "hitsumabushi334",
   "license": "MIT",
   "devDependencies": {
+    "@tsconfig/node22": "^22.0.2",
     "@types/node": "^22.15.29",
     "typescript": "^5.8.3"
   },

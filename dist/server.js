@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 import { FastMCP } from "fastmcp";
 import { z } from "zod";
 // FastMCPを使用して文字数カウンターのMCPを作成します
@@ -49,3 +50,4 @@ server.addTool({
 server.start({
     transportType: "stdio",
 });
+//# sourceMappingURL=server.js.map

@@ -1,0 +1,27 @@
+{
+  "name": "counter-mcp",
+  "version": "1.0.0",
+  "description": "counter-mcp",
+  "main": "dist/server.js",
+  "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "mcp",
+    "server"
+  ],
+  "author": "hitsumabushi334",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^22.15.29",
+    "typescript": "^5.8.3"
+  },
+  "bin": {
+    "counter-mcp": "dist/server.js"
+  },
+  "dependencies": {
+    "fastmcp": "^2.2.1",
+    "zod": "^3.25.50"
+  }
+}

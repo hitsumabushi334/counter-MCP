@@ -28,7 +28,7 @@ export const getBraveSearchResult = async (params: braveSearchParams) => {
   }
   const requestHeaders = {
     Accept: "application/json",
-    "x-Subscription-Token": apiKey,
+    "X-Subscription-Token": apiKey,
   };
 
   const response = await fetch(url, {
@@ -40,7 +40,13 @@ export const getBraveSearchResult = async (params: braveSearchParams) => {
   }
 
   const data = (await response.json()) as braveSearchResponse;
-  const urlList = data.web.results.map((result) => result.url);
+  if (!data.web || !data.web.results) {
+    console.warn("No results found in Brave Search response.");
+    return [];
+  }
+  const urlList = data.web.results
+    .map((result) => result.url)
+    .filter((url) => url);
   console.log(`Brave Search API returned ${urlList.length} results.`);
   if (urlList.length === 0) {
     return [];

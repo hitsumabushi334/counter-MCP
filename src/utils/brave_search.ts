@@ -73,6 +73,4 @@ const testBraveSearch = async () => {
 };
 
 // // テスト実行（直接スクリプトとして実行された場合のみ）
-if (require.main === module) {
-  testBraveSearch();
-}
+// await testBraveSearch();

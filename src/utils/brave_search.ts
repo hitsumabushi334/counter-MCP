@@ -1,9 +1,11 @@
 import { braveSearchParams, braveSearchResponse } from "../types.js";
+import dotenv from "dotenv";
 
 // Brave Search APIによるUrl取得
-export const getBraveSearchUrl = (params: braveSearchParams) => {
+dotenv.config();
+export const getBraveSearchUrl = (params: braveSearchParams): string => {
   const { query, searchLang } = params;
-  const endPoint = "https://search.brave.com/api/v1/search";
+  const endPoint = "https://api.search.brave.com/res/v1/web/search";
 
   const url = new URL(endPoint);
 
@@ -18,7 +20,9 @@ export const getBraveSearchUrl = (params: braveSearchParams) => {
 };
 
 // brave searchによる検索結果のUrl取得
-export const getBraveSearchResult = async (params: braveSearchParams) => {
+export const getBraveSearchResult = async (
+  params: braveSearchParams
+): Promise<string[]> => {
   const url: string = getBraveSearchUrl(params);
   const apiKey = process.env.BRAVE_SEARCH_API_KEY;
   if (!apiKey) {
@@ -53,3 +57,19 @@ export const getBraveSearchResult = async (params: braveSearchParams) => {
   }
   return urlList;
 };
+
+// 実際のAPI呼び出しをテスト
+const testBraveSearch = async () => {
+  const params: braveSearchParams = {
+    query: "example",
+    searchLang: "en",
+  };
+  try {
+    const results = await getBraveSearchResult(params);
+    console.log("Brave Search results:", results);
+  } catch (error) {
+    console.error("Error testing Brave Search API:", error);
+  }
+};
+
+testBraveSearch(); // この行を追加して関数を呼び出す

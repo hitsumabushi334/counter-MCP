@@ -1,9 +1,12 @@
 import {
   getBraveSearchResult,
   getBraveSearchUrl,
-} from "../utils/barave_search.js";
+} from "../utils/brave_search.js";
 import { braveSearchParams } from "../types.js";
+import dotenv from "dotenv";
 
+// 環境変数の設定
+dotenv.config();
 // Urlの取得テスト
 describe("Brave Search URL Generation", () => {
   const originalEnv = process.env;
@@ -31,7 +34,7 @@ describe("Brave Search URL Generation", () => {
 
     const url = getBraveSearchUrl(params);
     expect(url).toBe(
-      "https://search.brave.com/api/v1/search?q=test+search&search_lang=en&country=US"
+      "https://api.search.brave.com/res/v1/web/search?q=test+search&search_lang=en&country=US"
     );
   });
 
@@ -44,7 +47,7 @@ describe("Brave Search URL Generation", () => {
 
     const url = getBraveSearchUrl(params);
     expect(url).toBe(
-      "https://search.brave.com/api/v1/search?q=&search_lang=jp&country=US"
+      "https://api.search.brave.com/res/v1/web/search?q=&search_lang=jp&country=US"
     );
   });
 
@@ -74,7 +77,7 @@ describe("Brave Search URL Generation", () => {
     const result = await getBraveSearchResult(params);
     expect(result).toEqual(["https://example.com/1", "https://example.com/2"]);
     expect(mockFetch).toHaveBeenCalledWith(
-      "https://search.brave.com/api/v1/search?q=test+search&search_lang=en&country=US",
+      "https://api.search.brave.com/res/v1/web/search?q=test+search&search_lang=en&country=US",
       {
         headers: {
           "X-Subscription-Token": "dummy_api_key_for_test",

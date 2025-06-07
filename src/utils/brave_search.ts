@@ -72,4 +72,7 @@ const testBraveSearch = async () => {
   }
 };
 
-testBraveSearch(); // この行を追加して関数を呼び出す
+// // テスト実行（直接スクリプトとして実行された場合のみ）
+if (require.main === module) {
+  testBraveSearch();
+}

@@ -13,9 +13,25 @@ const fetchUrlsInParallel = async (
   // 例: arrayOfAxiosPromises は Axios のリクエストを行うプロミスの配列
   // const arrayOfAxiosPromises: Promise<AxiosResponse<any, any>>[] = [ /* ... */ ];
 
-  const results = await Promise.allSettled(
-    urlList.map((url) => axios.get(url))
-  );
+  const BATCH_SIZE = 5;
+  const batches = [];
+  for (let i = 0; i < urlList.length; i += BATCH_SIZE) {
+    batches.push(urlList.slice(i, i + BATCH_SIZE));
+  }
+
+  const allResults = [];
+  for (const batch of batches) {
+    const batchResults = await Promise.allSettled(
+      batch.map((url) =>
+        axios.get(url, {
+          timeout: 10000, // 10秒のタイムアウト
+          maxRedirects: 3,
+        })
+      )
+    );
+    allResults.push(...batchResults);
+  }
+  const results = allResults;
 
   const successfulResponses: AxiosResponse<any, any>[] = [];
   const errors: any[] = [];
@@ -30,7 +46,7 @@ const fetchUrlsInParallel = async (
   });
 
   // これで successfulResponses は AxiosResponse<any, any>[] 型になります
-  console.log("Successful responses:", successfulResponses);
+  console.log(`Successfully fetched ${successfulResponses.length} URLs`);
 
   if (errors.length > 0) {
     console.error("Failed requests reasons:", errors);

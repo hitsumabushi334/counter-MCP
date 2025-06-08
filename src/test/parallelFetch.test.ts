@@ -135,9 +135,11 @@ describe('fetchUrlsInParallel', () => {
     consoleErrorSpy.mockRestore();
   });
 
-  test('should process URLs in batches', async () => {
-    // BATCH_SIZE is 5 in the original file
-    const mockUrls = Array.from({ length: 7 }, (_, i) => `${BASE_URL}/page${i + 1}`);
+  // Original test for 7 URLs - this is the one to modify
+  test('should process URLs in batches and verify Promise.allSettled calls', async () => {
+    const BATCH_SIZE = 5; // Defined locally for this test's logic for calculating expected calls.
+                       // The actual BATCH_SIZE is used by the function being tested.
+    const mockUrls = Array.from({ length: BATCH_SIZE + 2 }, (_, i) => `${BASE_URL}/page${i + 1}`);
     const mockHtmlData = mockUrls.map((url, i) => `<html>Page ${i + 1} for ${url}</html>`);
 
     mockedGetBraveSearchResult.mockResolvedValue(mockUrls);
@@ -147,16 +149,35 @@ describe('fetchUrlsInParallel', () => {
         if (index !== -1) {
             return Promise.resolve(mockAxiosResponse(mockHtmlData[index]));
         }
-        return Promise.reject(mockAxiosError('Unknown URL'));
+        return Promise.reject(mockAxiosError('Unknown URL in batch processing test'));
     });
 
-    const results = await fetchUrlsInParallel(BATCH_TEST_SEARCH_PARAMS);
+    const originalPromiseAllSettled = Promise.allSettled;
+    // Spy on Promise.allSettled.
+    // Important: We are spying on the global Promise object.
+    const allSettledSpy = jest.spyOn(Promise, 'allSettled');
+    // We need to ensure that the spy also calls the original implementation,
+    // otherwise the actual fetching logic inside fetchUrlsInParallel won't work.
+    // However, jest.spyOn by default calls the original implementation unless
+    // .mockImplementation() or similar is used on the spy itself.
+    // So, direct spy should be okay. Let's confirm this behavior.
+    // If tests fail because allSettled is not behaving as expected, we might need:
+    // allSettledSpy.mockImplementation(promises => originalPromiseAllSettled(promises));
+
+    const results = await fetchUrlsInParallel({ query: 'test-batching-spy', searchLang: 'en' });
 
     expect(results.length).toBe(mockUrls.length);
     expect(mockedAxios.get).toHaveBeenCalledTimes(mockUrls.length);
     mockUrls.forEach(url => {
       expect(mockedAxios.get).toHaveBeenCalledWith(url, EXPECTED_AXIOS_CONFIG);
     });
+
+    // Verify Promise.allSettled was called the correct number of times
+    const expectedBatchCalls = Math.ceil(mockUrls.length / BATCH_SIZE);
+    expect(allSettledSpy).toHaveBeenCalledTimes(expectedBatchCalls);
+
+    // Restore the original Promise.allSettled
+    allSettledSpy.mockRestore();
   });
 
   test('should handle exactly BATCH_SIZE (5) URLs', async () => {

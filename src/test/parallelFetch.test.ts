@@ -54,8 +54,9 @@ describe('fetchUrlsInParallel', () => {
     expect(results).toEqual(mockHtmlData);
     expect(mockedGetBraveSearchResult).toHaveBeenCalledWith({ query: 'test', searchLang: 'en' });
     expect(mockedAxios.get).toHaveBeenCalledTimes(mockUrls.length);
-    expect(mockedAxios.get).toHaveBeenCalledWith(mockUrls[0], expect.any(Object));
-    expect(mockedAxios.get).toHaveBeenCalledWith(mockUrls[1], expect.any(Object));
+    const expectedAxiosConfig = { timeout: 10000, maxRedirects: 3 };
+    expect(mockedAxios.get).toHaveBeenCalledWith(mockUrls[0], expectedAxiosConfig);
+    expect(mockedAxios.get).toHaveBeenCalledWith(mockUrls[1], expectedAxiosConfig);
   });
 
   test('should return an empty array and log a warning when no URLs are found', async () => {
@@ -133,8 +134,9 @@ describe('fetchUrlsInParallel', () => {
 
     expect(results.length).toBe(mockUrls.length);
     expect(mockedAxios.get).toHaveBeenCalledTimes(mockUrls.length);
+    const expectedAxiosConfig = { timeout: 10000, maxRedirects: 3 };
     mockUrls.forEach(url => {
-      expect(mockedAxios.get).toHaveBeenCalledWith(url, expect.any(Object));
+      expect(mockedAxios.get).toHaveBeenCalledWith(url, expectedAxiosConfig);
     });
 
   });

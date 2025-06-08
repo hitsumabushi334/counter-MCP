@@ -39,16 +39,7 @@ describe('fetchUrlsInParallel', () => {
   // Clear mocks before each test to ensure a clean state
   beforeEach(() => {
     jest.clearAllMocks();
-    // Reset console mocks if they were used, or spy on them if needed for specific tests
-    // jest.spyOn(console, 'log').mockImplementation(() => {});
-    // jest.spyOn(console, 'warn').mockImplementation(() => {});
-    // jest.spyOn(console, 'error').mockImplementation(() => {});
   });
-
-  // Restore original console functions after all tests if spied upon
-  // afterAll(() => {
-  //   jest.restoreAllMocks();
-  // });
 
   test('should return fetched data when all requests are successful', async () => {
     const mockUrls = ['http://example.com/page1', 'http://example.com/page2'];
@@ -146,13 +137,5 @@ describe('fetchUrlsInParallel', () => {
       expect(mockedAxios.get).toHaveBeenCalledWith(url, expect.any(Object));
     });
 
-    // To truly test batching behavior without specific hooks in the code,
-    // we'd rely on the fact that Promise.allSettled is called per batch.
-    // However, directly observing that without more invasive mocking or logging
-    // is tricky. The current test ensures all URLs are fetched.
-    // We can infer batching by the structure of the code if all URLs are processed.
-    // For a more direct test of batching, one might need to mock Promise.allSettled itself,
-    // or add a test-specific callback within the batch loop in the original code (not ideal).
-    // Given the current structure, verifying all URLs are fetched is a good proxy.
   });
 });

@@ -129,17 +129,7 @@ describe('fetchUrlsInParallel', () => {
 
     mockedGetBraveSearchResult.mockResolvedValue(mockUrls);
 
-    // Mock axios.get to return a unique response for each URL
-    mockUrls.forEach((url, index) => {
-      mockedAxios.get.mockResolvedValueOnce(mockAxiosResponse(mockHtmlData[index]));
-    });
-    // Reset mock call count for this specific test scenario if using chained .mockResolvedValueOnce
-    // For this setup, jest automatically tracks calls for `mockedAxios.get` across the entire test if not reset.
-    // However, since we are setting up mockResolvedValueOnce for each specific URL call in order,
-    // we need to ensure the mock implementation is correctly sequenced.
-    // A more robust way for batch testing might involve checking call order or using different mock instances if needed.
-
-    // For this test, we'll re-assign the mock implementation to ensure it maps correctly.
+    // For this test, we'll assign the mock implementation to ensure it maps correctly.
     mockedAxios.get.mockImplementation(url => {
         const index = mockUrls.indexOf(url);
         if (index !== -1) {

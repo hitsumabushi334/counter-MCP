@@ -76,7 +76,11 @@ export const fetchUrlsInParallel = async (
       errors.map((error) => error.message) // エラーメッセージのみを抽出して表示
     );
   }
-
-  // 6. 成功したレスポンスのHTMLデータのみを返します
+  // 6. 成功したレスポンスがない場合は警告を出し、空の配列を返します
+  if (successfulData.length === 0) {
+    console.warn("成功したレスポンスがありませんでした。");
+    return JSON.stringify({ success: false, htmlData: [] });
+  }
+  // 7. 成功したレスポンスのHTMLデータのみを返します
   return JSON.stringify({ success: true, htmlData: successfulData });
 };

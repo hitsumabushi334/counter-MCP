@@ -95,7 +95,10 @@ describe("fetchUrlsInParallel", () => {
 
     const result = await fetchUrlsInParallel(MOCK_SEARCH_PARAMS);
     const parsedResult = JSON.parse(result);
-    expect(parsedResult).toEqual({ success: true, htmlData: TEST_HTML_MULTIPLE });
+    expect(parsedResult).toEqual({
+      success: true,
+      htmlData: TEST_HTML_MULTIPLE,
+    });
     expect(mockedGetBraveSearchResult).toHaveBeenCalledWith(MOCK_SEARCH_PARAMS);
     expect(mockedAxios.get).toHaveBeenCalledTimes(TEST_URLS_MULTIPLE.length);
     expect(mockedAxios.get).toHaveBeenCalledWith(
@@ -138,7 +141,10 @@ describe("fetchUrlsInParallel", () => {
 
     const result = await fetchUrlsInParallel(MOCK_SEARCH_PARAMS);
     const parsedResult = JSON.parse(result);
-    expect(parsedResult).toEqual({ success: true, htmlData: [TEST_HTML_MULTIPLE[0]] });
+    expect(parsedResult).toEqual({
+      success: true,
+      htmlData: [TEST_HTML_MULTIPLE[0]],
+    });
     expect(mockedAxios.get).toHaveBeenCalledTimes(TEST_URLS_MULTIPLE.length);
     expect(consoleErrorSpy).toHaveBeenCalledWith(
       expect.stringContaining("1 件のリクエストが失敗しました。理由:"),
@@ -160,7 +166,7 @@ describe("fetchUrlsInParallel", () => {
 
     const result = await fetchUrlsInParallel(MOCK_SEARCH_PARAMS);
     const parsedResult = JSON.parse(result);
-    expect(parsedResult).toEqual({ success: true, htmlData: [] });
+    expect(parsedResult).toEqual({ success: false, htmlData: [] });
     expect(mockedAxios.get).toHaveBeenCalledTimes(TEST_URLS_MULTIPLE.length);
     expect(consoleErrorSpy).toHaveBeenCalledWith(
       expect.stringContaining("2 件のリクエストが失敗しました。理由:"),

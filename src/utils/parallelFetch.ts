@@ -29,16 +29,16 @@ const createBatches = <T>(items: T[], size: number): T[][] => {
 /**
  * URLリストを並列でフェッチし、取得したHTMLコンテンツを返します。
  * @param {braveSearchParams} params - Brave Searchの検索パラメータ
- * @returns {Promise<string[]>} - 取得に成功したHTMLコンテンツの文字列の配列
+ * @returns {Promise<string>} - 取得に成功したHTMLコンテンツの文字列と成功フラグのJSON文字列
  */
 export const fetchUrlsInParallel = async (
   params: braveSearchParams
-): Promise<string[]> => {
+): Promise<string> => {
   // 1. Brave SearchからURLのリストを取得します
   const urlList = await getBraveSearchResult(params);
   if (urlList.length === 0) {
     console.warn("Brave Searchの結果にURLが見つかりませんでした。");
-    return [];
+    return JSON.stringify({ success: false, htmlData: [] });
   }
 
   // 2. URLリストをバッチに分割します
@@ -78,5 +78,5 @@ export const fetchUrlsInParallel = async (
   }
 
   // 6. 成功したレスポンスのHTMLデータのみを返します
-  return successfulData;
+  return JSON.stringify({ success: true, htmlData: successfulData });
 };

@@ -93,8 +93,9 @@ describe("fetchUrlsInParallel", () => {
       .mockResolvedValueOnce(mockAxiosResponse(TEST_HTML_MULTIPLE[0]))
       .mockResolvedValueOnce(mockAxiosResponse(TEST_HTML_MULTIPLE[1]));
 
-    const results = await fetchUrlsInParallel(MOCK_SEARCH_PARAMS);
-    expect(results).toEqual(TEST_HTML_MULTIPLE);
+    const result = await fetchUrlsInParallel(MOCK_SEARCH_PARAMS);
+    const parsedResult = JSON.parse(result);
+    expect(parsedResult).toEqual({ success: true, htmlData: TEST_HTML_MULTIPLE });
     expect(mockedGetBraveSearchResult).toHaveBeenCalledWith(MOCK_SEARCH_PARAMS);
     expect(mockedAxios.get).toHaveBeenCalledTimes(TEST_URLS_MULTIPLE.length);
     expect(mockedAxios.get).toHaveBeenCalledWith(
@@ -113,8 +114,9 @@ describe("fetchUrlsInParallel", () => {
       .spyOn(console, "warn")
       .mockImplementation(() => {});
 
-    const results = await fetchUrlsInParallel(MOCK_SEARCH_PARAMS);
-    expect(results).toEqual([]);
+    const result = await fetchUrlsInParallel(MOCK_SEARCH_PARAMS);
+    const parsedResult = JSON.parse(result);
+    expect(parsedResult).toEqual({ success: false, htmlData: [] });
     expect(consoleWarnSpy).toHaveBeenCalledWith(
       "Brave Searchの結果にURLが見つかりませんでした。"
     );
@@ -134,8 +136,9 @@ describe("fetchUrlsInParallel", () => {
       .spyOn(console, "error")
       .mockImplementation(() => {});
 
-    const results = await fetchUrlsInParallel(MOCK_SEARCH_PARAMS);
-    expect(results).toEqual([TEST_HTML_MULTIPLE[0]]);
+    const result = await fetchUrlsInParallel(MOCK_SEARCH_PARAMS);
+    const parsedResult = JSON.parse(result);
+    expect(parsedResult).toEqual({ success: true, htmlData: [TEST_HTML_MULTIPLE[0]] });
     expect(mockedAxios.get).toHaveBeenCalledTimes(TEST_URLS_MULTIPLE.length);
     expect(consoleErrorSpy).toHaveBeenCalledWith(
       expect.stringContaining("1 件のリクエストが失敗しました。理由:"),
@@ -155,8 +158,9 @@ describe("fetchUrlsInParallel", () => {
       .spyOn(console, "error")
       .mockImplementation(() => {});
 
-    const results = await fetchUrlsInParallel(MOCK_SEARCH_PARAMS);
-    expect(results).toEqual([]);
+    const result = await fetchUrlsInParallel(MOCK_SEARCH_PARAMS);
+    const parsedResult = JSON.parse(result);
+    expect(parsedResult).toEqual({ success: true, htmlData: [] });
     expect(mockedAxios.get).toHaveBeenCalledTimes(TEST_URLS_MULTIPLE.length);
     expect(consoleErrorSpy).toHaveBeenCalledWith(
       expect.stringContaining("2 件のリクエストが失敗しました。理由:"),
@@ -165,10 +169,8 @@ describe("fetchUrlsInParallel", () => {
     consoleErrorSpy.mockRestore();
   });
 
-  // Original test for 7 URLs - this is the one to modify
   test("should process URLs in batches and verify Promise.allSettled calls", async () => {
-    const BATCH_SIZE = 5; // Defined locally for this test's logic for calculating expected calls.
-    // The actual BATCH_SIZE is used by the function being tested.
+    const BATCH_SIZE = 5;
     const mockUrls = Array.from(
       { length: BATCH_SIZE + 2 },
       (_, i) => `${BASE_URL}/page${i + 1}`
@@ -189,34 +191,23 @@ describe("fetchUrlsInParallel", () => {
       );
     });
 
-    const originalPromiseAllSettled = Promise.allSettled;
-    // Spy on Promise.allSettled.
-    // Important: We are spying on the global Promise object.
     const allSettledSpy = jest.spyOn(Promise, "allSettled");
-    // We need to ensure that the spy also calls the original implementation,
-    // otherwise the actual fetching logic inside fetchUrlsInParallel won't work.
-    // However, jest.spyOn by default calls the original implementation unless
-    // .mockImplementation() or similar is used on the spy itself.
-    // So, direct spy should be okay. Let's confirm this behavior.
-    // If tests fail because allSettled is not behaving as expected, we might need:
-    // allSettledSpy.mockImplementation(promises => originalPromiseAllSettled(promises));
 
-    const results = await fetchUrlsInParallel({
+    const result = await fetchUrlsInParallel({
       query: "test-batching-spy",
       searchLang: "en",
     });
 
-    expect(results.length).toBe(mockUrls.length);
+    const parsedResult = JSON.parse(result);
+    expect(parsedResult.htmlData.length).toBe(mockUrls.length);
     expect(mockedAxios.get).toHaveBeenCalledTimes(mockUrls.length);
     mockUrls.forEach((url) => {
       expect(mockedAxios.get).toHaveBeenCalledWith(url, EXPECTED_AXIOS_CONFIG);
     });
 
-    // Verify Promise.allSettled was called the correct number of times
     const expectedBatchCalls = Math.ceil(mockUrls.length / BATCH_SIZE);
     expect(allSettledSpy).toHaveBeenCalledTimes(expectedBatchCalls);
 
-    // Restore the original Promise.allSettled
     allSettledSpy.mockRestore();
   });
 
@@ -238,11 +229,12 @@ describe("fetchUrlsInParallel", () => {
       return Promise.reject(mockAxiosError("Unknown URL in batch exact test"));
     });
 
-    const results = await fetchUrlsInParallel({
+    const result = await fetchUrlsInParallel({
       query: "test-batch-exact",
       searchLang: "en",
     });
-    expect(results.length).toBe(BATCH_SIZE_EXACT_URLS.length);
+    const parsedResult = JSON.parse(result);
+    expect(parsedResult.htmlData.length).toBe(BATCH_SIZE_EXACT_URLS.length);
     expect(mockedAxios.get).toHaveBeenCalledTimes(BATCH_SIZE_EXACT_URLS.length);
     BATCH_SIZE_EXACT_URLS.forEach((url) => {
       expect(mockedAxios.get).toHaveBeenCalledWith(url, EXPECTED_AXIOS_CONFIG);
@@ -267,11 +259,12 @@ describe("fetchUrlsInParallel", () => {
       return Promise.reject(mockAxiosError("Unknown URL in batch less test"));
     });
 
-    const results = await fetchUrlsInParallel({
+    const result = await fetchUrlsInParallel({
       query: "test-batch-less",
       searchLang: "en",
     });
-    expect(results.length).toBe(BATCH_SIZE_LESS_URLS.length);
+    const parsedResult = JSON.parse(result);
+    expect(parsedResult.htmlData.length).toBe(BATCH_SIZE_LESS_URLS.length);
     expect(mockedAxios.get).toHaveBeenCalledTimes(BATCH_SIZE_LESS_URLS.length);
     BATCH_SIZE_LESS_URLS.forEach((url) => {
       expect(mockedAxios.get).toHaveBeenCalledWith(url, EXPECTED_AXIOS_CONFIG);
@@ -296,18 +289,16 @@ describe("fetchUrlsInParallel", () => {
       return Promise.reject(mockAxiosError("Unknown URL in batch more test"));
     });
 
-    const results = await fetchUrlsInParallel({
+    const result = await fetchUrlsInParallel({
       query: "test-batch-more",
       searchLang: "en",
     });
-    expect(results.length).toBe(BATCH_SIZE_MORE_URLS.length);
+    const parsedResult = JSON.parse(result);
+    expect(parsedResult.htmlData.length).toBe(BATCH_SIZE_MORE_URLS.length);
     expect(mockedAxios.get).toHaveBeenCalledTimes(BATCH_SIZE_MORE_URLS.length);
     BATCH_SIZE_MORE_URLS.forEach((url) => {
       expect(mockedAxios.get).toHaveBeenCalledWith(url, EXPECTED_AXIOS_CONFIG);
     });
-    // Although direct observation of batching calls to Promise.allSettled is complex
-    // without more invasive mocking, the code structure implies two batches here.
-    // The primary check is that all URLs are fetched correctly.
   });
 
   test("should handle timeout errors from axios.get", async () => {
@@ -321,9 +312,6 @@ describe("fetchUrlsInParallel", () => {
       "Timeout connecting to server",
       "ECONNABORTED"
     );
-    // Ensure the config used in mockAxiosError is consistent or not an issue for the test
-    // If specific config is needed for the error object:
-    // const timeoutError = mockAxiosError('Timeout connecting to server', 'ECONNABORTED', { url: timeoutUrl, method: 'get' });
 
     mockedAxios.get.mockImplementation(async (url: string) => {
       if (url === timeoutUrl) {
@@ -339,12 +327,13 @@ describe("fetchUrlsInParallel", () => {
       .spyOn(console, "error")
       .mockImplementation(() => {});
 
-    const results = await fetchUrlsInParallel({
+    const result = await fetchUrlsInParallel({
       query: "test-timeout",
       searchLang: "en",
     });
 
-    expect(results).toEqual([regularHtml]); // Only the regular page should be fetched
+    const parsedResult = JSON.parse(result);
+    expect(parsedResult).toEqual({ success: true, htmlData: [regularHtml] });
     expect(mockedAxios.get).toHaveBeenCalledTimes(2);
     expect(mockedAxios.get).toHaveBeenCalledWith(
       timeoutUrl,

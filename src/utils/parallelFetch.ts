@@ -1,7 +1,6 @@
 import { getBraveSearchResult } from "./brave_search.js";
 import { braveSearchParams } from "../types.js";
 import axios, { AxiosError, AxiosResponse } from "axios";
-import { th } from "zod/v4/locales";
 
 // Axiosリクエストの設定を定数として定義
 const AXIOS_GET_CONFIG = {

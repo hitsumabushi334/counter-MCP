@@ -68,6 +68,7 @@ server.addTool({
   execute: async (params) => {
     try {
       const res = await fetchUrlsInParallel(params);
+      return res; // 成功時は取得した JSON 文字列をそのまま返却
     } catch (error: any) {
       console.error("Error occurred while fetching URLs in parallel:", error);
       return JSON.stringify({

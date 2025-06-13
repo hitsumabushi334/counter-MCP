@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { FastMCP } from "fastmcp";
 import { z } from "zod";
+import { fetchUrlsInParallel } from "./utils/parallelFetch.js";
 
 // FastMCPを使用して文字数カウンターのMCPを作成します
 const server = new FastMCP({
@@ -50,6 +51,33 @@ server.addTool({
   },
 });
 
+// 並列検索機能をサーバーに追加
+server.addTool({
+  name: "parallel-search",
+  description:
+    "Brave SearchとFetchを使用してURLを並列で検索し、HTMLコンテンツを取得します",
+  parameters: z.object({
+    query: z.string().describe("検索クエリ"),
+    searchLang: z.enum(["en", "jp"]).default("en").describe("検索言語"),
+    country: z
+      .enum(["US", "JP"])
+      .default("US")
+      .optional()
+      .describe("検索対象の国"),
+  }),
+  execute: async (params) => {
+    try {
+      const res = await fetchUrlsInParallel(params);
+    } catch (error: any) {
+      console.error("Error occurred while fetching URLs in parallel:", error);
+      return JSON.stringify({
+        success: false,
+        message: `並列検索中にエラーが発生しました: ${error.message}`,
+        htmlData: [],
+      });
+    }
+  },
+});
 server.start({
   transportType: "stdio",
 });

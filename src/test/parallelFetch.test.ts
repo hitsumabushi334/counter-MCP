@@ -153,7 +153,7 @@ describe("fetchUrlsInParallel", () => {
     consoleErrorSpy.mockRestore();
   });
 
-  test("should return an empty array and log errors when all requests fail", async () => {
+  test("should throw error when all requests fail", async () => {
     const error1 = mockAxiosError("Network Error 1");
     const error2 = mockAxiosError("Timeout Error 2");
 
@@ -163,16 +163,25 @@ describe("fetchUrlsInParallel", () => {
     const consoleErrorSpy = jest
       .spyOn(console, "error")
       .mockImplementation(() => {});
+    const consoleWarnSpy = jest
+      .spyOn(console, "warn")
+      .mockImplementation(() => {});
 
-    const result = await fetchUrlsInParallel(MOCK_SEARCH_PARAMS);
-    const parsedResult = JSON.parse(result);
-    expect(parsedResult).toEqual({ success: false, htmlData: [] });
+    await expect(fetchUrlsInParallel(MOCK_SEARCH_PARAMS)).rejects.toThrow(
+      "並列フェッチの結果、成功したレスポンスがありませんでした。"
+    );
+
     expect(mockedAxios.get).toHaveBeenCalledTimes(TEST_URLS_MULTIPLE.length);
     expect(consoleErrorSpy).toHaveBeenCalledWith(
       expect.stringContaining("2 件のリクエストが失敗しました。理由:"),
       [error1.message, error2.message]
     );
+    expect(consoleWarnSpy).toHaveBeenCalledWith(
+      "成功したレスポンスがありませんでした。"
+    );
+
     consoleErrorSpy.mockRestore();
+    consoleWarnSpy.mockRestore();
   });
 
   test("should process URLs in batches and verify Promise.allSettled calls", async () => {

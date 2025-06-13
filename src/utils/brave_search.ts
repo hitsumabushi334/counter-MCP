@@ -4,15 +4,15 @@ import dotenv from "dotenv";
 // Brave Search APIによるUrl取得
 dotenv.config();
 export const getBraveSearchUrl = (params: braveSearchParams): string => {
-  const { query, searchLang } = params;
+  const { query, searchLang, country } = params;
   const endPoint = "https://api.search.brave.com/res/v1/web/search";
 
   const url = new URL(endPoint);
 
   url.searchParams.append("q", query);
   url.searchParams.append("search_lang", searchLang);
-  if (params.country) {
-    url.searchParams.append("country", params.country);
+  if (country) {
+    url.searchParams.append("country", country);
   }
 
   console.log(`Brave Search API URL: ${url.toString()}`);

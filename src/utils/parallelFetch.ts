@@ -1,6 +1,7 @@
 import { getBraveSearchResult } from "./brave_search.js";
 import { braveSearchParams } from "../types.js";
 import axios, { AxiosError, AxiosResponse } from "axios";
+import { th } from "zod/v4/locales";
 
 // Axiosリクエストの設定を定数として定義
 const AXIOS_GET_CONFIG = {
@@ -79,7 +80,9 @@ export const fetchUrlsInParallel = async (
   // 6. 成功したレスポンスがない場合は警告を出し、空の配列を返します
   if (successfulData.length === 0) {
     console.warn("成功したレスポンスがありませんでした。");
-    return JSON.stringify({ success: false, htmlData: [] });
+    throw new Error(
+      "並列フェッチの結果、成功したレスポンスがありませんでした。"
+    );
   }
   // 7. 成功したレスポンスのHTMLデータのみを返します
   return JSON.stringify({ success: true, htmlData: successfulData });

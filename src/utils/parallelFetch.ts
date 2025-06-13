@@ -27,6 +27,38 @@ const createBatches = <T>(items: T[], size: number): T[][] => {
 };
 
 /**
+ * HTMLからbody部分だけを抽出します
+ * @param {string} html - 完全なHTMLコンテンツ
+ * @returns {string} - body要素の内容（bodyタグは含まない）
+ */
+const extractBodyContent = (html: string): string => {
+  try {
+    const bodyMatch = html.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
+    if (!bodyMatch) return html;
+
+    let content = bodyMatch[1]
+      // 不要な要素を除去
+      .replace(/<script[\s\S]*?<\/script>/gi, "")
+      .replace(/<style[\s\S]*?<\/style>/gi, "")
+      .replace(/<svg[\s\S]*?<\/svg>/gi, "")
+      .replace(/<noscript[\s\S]*?<\/noscript>/gi, "")
+      .replace(/<!--[\s\S]*?-->/g, "")
+      // 空白を整理
+      .replace(/\s+/g, " ")
+      .trim();
+
+    // 長すぎる場合は切り詰め
+    if (content.length > 10000) {
+      content = content.substring(0, 10000) + "... [content truncated]";
+    }
+
+    return content;
+  } catch (error) {
+    return html;
+  }
+};
+
+/**
  * URLリストを並列でフェッチし、取得したHTMLコンテンツを返します。
  * @param {braveSearchParams} params - Brave Searchの検索パラメータ
  * @returns {Promise<string>} - 取得に成功したHTMLコンテンツの文字列と成功フラグのJSON文字列
@@ -55,11 +87,13 @@ export const fetchUrlsInParallel = async (
     allSettledResults.push(...results);
   }
 
-  // 4. 成功したレスポンスと失敗したエラーを分類します
+  // 4. 成功したレスポンスと失敗したエラーを分類し、body部分を抽出します
   const { successfulData, errors } = allSettledResults.reduce(
     (accumulator, result) => {
       if (result.status === "fulfilled") {
-        accumulator.successfulData.push(result.value.data);
+        // HTMLからbody部分だけを抽出
+        const bodyContent = extractBodyContent(result.value.data);
+        accumulator.successfulData.push(bodyContent);
       } else {
         accumulator.errors.push(result.reason);
       }
@@ -67,7 +101,10 @@ export const fetchUrlsInParallel = async (
     },
     { successfulData: [] as string[], errors: [] as AxiosError[] }
   );
-
+  successfulData.map((data) => {
+    const bodyContent = extractBodyContent(data);
+    return bodyContent;
+  });
   // 5. 処理結果をコンソールに出力します
   console.log(`✅ 正常に ${successfulData.length} 件のURLをフェッチしました。`);
   if (errors.length > 0) {
